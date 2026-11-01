@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { SMART_PEOPLE } from './smartPeople';
 import './App.css';
 
 function App() {
-  const [people] = useState(SMART_PEOPLE);
+  const searchId = useId();
+  const minIqId = useId();
+  const sortId = useId();
+
+  const [people, setPeople] = useState(SMART_PEOPLE);
   const [searchTerm, setSearchTerm] = useState('');
   const [minIq, setMinIq] = useState(NaN);
   const [sortBy, setSortBy] = useState('name');
@@ -34,54 +38,86 @@ function App() {
       return a.name.localeCompare(b.name);
     });
 
+  const handleDelete = (id) => {
+    setPeople((currentPeople) =>
+      currentPeople.filter((person) => person.id !== id),
+    );
+  };
+
+  const handleReset = () => {
+    setPeople(SMART_PEOPLE);
+  };
+
   return (
     <main>
       <h1>Scientist & Pioneer Directory</h1>
 
       <section aria-label="Directory controls">
-        <label htmlFor="search-name">
-          Search by name
-        </label>
-        <input
-          id="search-name"
-          type="search"
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-          placeholder="Search a name..."
-        />
+        <div>
+          <label htmlFor={searchId}>
+            Search by name
+          </label>
+          <input
+            id={searchId}
+            type="search"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Search a name..."
+          />
+        </div>
 
-        <label htmlFor="min-iq">
-          Minimum IQ
-        </label>
-        <input
-          id="min-iq"
-          type="number"
-          min="0"
-          value={minIq}
-         onChange={(event) => setMinIq(event.target.valueAsNumber)}
-          placeholder="Minimum IQ"
-        />
+        <div>
+          <label htmlFor={minIqId}>
+            Minimum IQ
+          </label>
+          <input
+            id={minIqId}
+            type="number"
+            min="0"
+            value={Number.isNaN(minIq) ? '' : minIq}
+            onChange={(event) => setMinIq(event.target.valueAsNumber)}
+            placeholder="Minimum IQ"
+          />
+        </div>
 
-        <label htmlFor="sort-by">
-          Sort by
-        </label>
-        <select
-          id="sort-by"
-          value={sortBy}
-          onChange={(event) => setSortBy(event.target.value)}
-        >
-          <option value="name">Name</option>
-          <option value="iq">IQ</option>
-          <option value="age">Age</option>
-        </select>
+        <div>
+          <label htmlFor={sortId}>
+            Sort by
+          </label>
+          <select
+            id={sortId}
+            value={sortBy}
+            onChange={(event) => setSortBy(event.target.value)}
+          >
+            <option value="name">Name</option>
+            <option value="iq">IQ</option>
+            <option value="age">Age</option>
+          </select>
+        </div>
+
+        <button type="button" onClick={handleReset}>
+          Reset
+        </button>
       </section>
 
-      <ul>
+      <p role="status" aria-live="polite">
+        {filteredPeople.length} result
+        {filteredPeople.length !== 1 ? 's' : ''}
+      </p>
+
+      <ul aria-label="Scientists and pioneers">
         {filteredPeople.map((person) => (
           <li key={person.id}>
             <h2>{person.name}</h2>
             <p>Age: {person.age}</p>
             <p>IQ: {person.iq}</p>
+
+            <button
+              type="button"
+              onClick={() => handleDelete(person.id)}
+            >
+              Delete
+            </button>
           </li>
         ))}
       </ul>
